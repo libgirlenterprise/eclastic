@@ -4,6 +4,19 @@
    These are the humble beginnings of an elasticseach client in
    Common Lisp.
 
+** Installation
+   You can use [[https://github.com/roswell/roswell][roswell]] to install this project from github.
+   
+   From this fork
+#+BEGIN_SRC bash
+   ros install libgirlenterprise/eclastic
+#+END_SRC
+   
+   From original repository
+#+BEGIN_SRC bash
+   ros install gschjetne/eclastic
+#+END_SRC
+   
 ** Work in Progress
    I intend to re-write large portions of the library soon, to more
    easily support a greater set of Elasticsearch features.
