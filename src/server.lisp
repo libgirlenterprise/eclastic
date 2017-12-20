@@ -37,10 +37,16 @@
          :reader host)
    (port :initarg :port
          :initform 9200
-         :reader port)))
+         :reader port)
+   (ssl :initarg :ssl
+	:initform nil
+	:reader ssl)))
 
 (defmethod get-uri ((this <server>))
-  (format nil "http://~A:~A"
+  (format nil "~A://~A:~A"
+	  (if (ssl this)
+	      "https"
+	      "http")
           (host this)
           (port this)))
 
