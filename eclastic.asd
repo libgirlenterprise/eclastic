@@ -27,7 +27,8 @@
   :depends-on (:drakma
                :yason
                :flexi-streams
-               :anaphora)
+               :anaphora
+	       :abstract-classes)
   :components
   ((:module "src"
             :serial t

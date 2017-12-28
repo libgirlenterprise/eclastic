@@ -46,6 +46,8 @@
            :<prefix>
            :<wildcard>
            :<geo-bounding-box>
+	   :<term>
+	   :term
            :match
            :bool
            :boosting
@@ -119,18 +121,25 @@
   ((score-mode :initarg :score-mode
                :reader score-mode)))
 
-(defclass <match> (<string-query>
-                   <fuzzy-query>
-                   <boolean-query>
-                   <field-query>
-                   <zero-terms-query>
-                   <cutoff-frequency-query>
-                   <boost-query>)
+(abstract-classes:define-abstract-class <query-dsl-leaf> (<string-query>
+							  <fuzzy-query>
+							  <boolean-query>
+							  <field-query>
+							  <zero-terms-query>
+							  <cutoff-frequency-query>
+							  <boost-query>)
+  ())
+
+(defclass <match> (<query-dsl-leaf>)
   ((match-type :initarg :match-type
                :reader match-type)))
 
-(defmethod encode-slots progn ((this <match>))
-  (with-object-element ((match-type this))
+(defclass <term> (<query-dsl-leaf>) ())
+
+(defmethod encode-slots progn ((this <query-dsl-leaf>))
+  (with-object-element (case (class-name (class-of this))
+			 ('<match> (match-type this))
+			 ('<term> "term"))
     (with-object ()
       (with-object-element ((search-field this))
         (with-object ()
@@ -144,21 +153,33 @@
                                   (fuzziness this))
           (encode-object-element* "boost" (boost this)))))))
 
-(defun match (query-string field &key
-                                   operator
-                                   (type :match)
-                                   fuzziness
-                                   zero-terms-query
-                                   cutoff-frequency
-                                   boost)
-  (make-instance '<match>
+(defun match (&rest params)
+  (apply #'query-dsl-leaf
+	 (append params
+		 (list :dsl-leaf-class-name '<match>))))
+
+(defun term (&rest params)
+  (apply #'query-dsl-leaf
+	 (append params
+		 (list :dsl-leaf-class-name '<term>))))
+
+(defun query-dsl-leaf (query-string field &key
+					    operator
+					    dsl-leaf-class-name
+					    (type :match)
+					    fuzziness
+					    zero-terms-query
+					    cutoff-frequency
+					    boost)
+  (make-instance dsl-leaf-class-name
                  :query-string query-string
                  :search-field field
                  :operator (when operator
                              (ecase operator
                                (:or "or")
                                (:and "and")))
-                 :match-type (when type
+                 :match-type (when (and type
+					(eq dsl-leaf-class-name '<match>))
                                (ecase type
                                  (:match "match")
                                  (:match-phrase "match_phrase")
