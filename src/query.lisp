@@ -36,6 +36,7 @@
            :<bool>
            :<boosting>
            :<filtered>
+	   :<term>
            :<terms>
            :<match-all>
            :<ids>
@@ -50,6 +51,7 @@
            :bool
            :boosting
            :filtered
+	   :term 
            :terms
            :match-all
            :ids
