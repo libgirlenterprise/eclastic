@@ -129,6 +129,17 @@
   ((match-type :initarg :match-type
                :reader match-type)))
 
+(defclass <term> (<string-query> ; hasn't supported boost or others
+		  <field-query>)
+  ())
+
+(defmethod encode-slots progn ((this <term>))
+  (with-object-element ("term")
+    (with-object ()
+      (encode-object-element (search-field this)
+			     (query-string this)))))
+	
+      
 (defmethod encode-slots progn ((this <match>))
   (with-object-element ((match-type this))
     (with-object ()
@@ -143,6 +154,11 @@
           (encode-object-element* "fuzziness"
                                   (fuzziness this))
           (encode-object-element* "boost" (boost this)))))))
+
+(defun term (query-string field)
+  (make-instance '<term>
+		 :query-string query-string
+		 :search-field field))
 
 (defun match (query-string field &key
                                    operator
