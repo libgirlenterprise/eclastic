@@ -143,11 +143,18 @@
 
 (defmethod create ((place <type>) (document <document>))
   (multiple-value-bind (result status)
-      (send-request
-       (format nil "~A/~A/_create" (get-uri place) (document-id document))
-       :put
-       :data (with-output-to-string (s)
-               (yason:encode (document-source document) s)))
+      (apply #'send-request
+	     (append (handler-case
+			 (list (format nil "~A/~A/_create" (get-uri place) (document-id document))
+			       :put)
+		       (unbound-slot (us)
+			 (if (eq (cell-error-name us)
+				 'eclastic.document::id)
+			     (list (get-uri place)
+				   :post)
+			     (signal us))))
+		     (list :data (with-output-to-string (s)
+				   (yason:encode (document-source document) s)))))
     (if (= 409 status)
         (error 'document-exists)
         (hash-to-document result))))
